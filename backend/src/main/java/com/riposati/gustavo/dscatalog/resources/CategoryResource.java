@@ -1,7 +1,6 @@
 package com.riposati.gustavo.dscatalog.resources;
 
 import com.riposati.gustavo.dscatalog.dto.CategoryDTO;
-import com.riposati.gustavo.dscatalog.entities.Category;
 import com.riposati.gustavo.dscatalog.services.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -41,5 +40,16 @@ public class CategoryResource {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri()
                 .buildAndExpand().toUri();
         return ResponseEntity.created(uri).body(categoryService.insertAll(categoriesDto));
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<CategoryDTO> update(@PathVariable("id") Long id, @RequestBody CategoryDTO categoriesDto) {
+        return ResponseEntity.ok().body(categoryService.update(id,categoriesDto));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
+        categoryService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
