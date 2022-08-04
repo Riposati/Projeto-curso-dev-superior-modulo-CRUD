@@ -8,6 +8,8 @@ import com.riposati.gustavo.dscatalog.services.exceptions.ResourceNotFoundExcept
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,12 @@ public class CategoryService {
     public List<CategoryDTO> findAll(){
         List<Category> categories = categoryRepository.findAll();
         return categories.stream().map(CategoryDTO::new).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CategoryDTO> findAllPaged(PageRequest pageRequest){
+        Page<Category> categories = categoryRepository.findAll(pageRequest);
+        return categories.map(CategoryDTO::new);
     }
 
     @Transactional(readOnly = true)
@@ -70,6 +78,16 @@ public class CategoryService {
             categoryRepository.deleteById(id);
         }catch (EmptyResultDataAccessException e){
             throw new ResourceNotFoundException("Id not found " + id);
+        }
+        catch (DataIntegrityViolationException e){
+            throw new DatabaseException("Integrity violation");
+        }
+    }
+
+    public void deleteMany(List<CategoryDTO>categoriesDto) {
+        try{
+            List<Category> categories = categoriesDto.stream().map(x -> new Category(x.getId(), x.getName())).collect(Collectors.toList());
+            categoryRepository.deleteAll(categories);
         }
         catch (DataIntegrityViolationException e){
             throw new DatabaseException("Integrity violation");
