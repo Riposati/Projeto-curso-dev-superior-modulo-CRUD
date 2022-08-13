@@ -1,7 +1,10 @@
 package com.riposati.gustavo.dscatalog.services;
 
+import com.riposati.gustavo.dscatalog.dto.CategoryDTO;
 import com.riposati.gustavo.dscatalog.dto.ProductDTO;
+import com.riposati.gustavo.dscatalog.entities.Category;
 import com.riposati.gustavo.dscatalog.entities.Product;
+import com.riposati.gustavo.dscatalog.repositories.CategoryRepository;
 import com.riposati.gustavo.dscatalog.repositories.ProductRepository;
 import com.riposati.gustavo.dscatalog.services.exceptions.DatabaseException;
 import com.riposati.gustavo.dscatalog.services.exceptions.ResourceNotFoundException;
@@ -14,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +26,9 @@ public class ProductService {
 
     @Autowired
     ProductRepository productRepository;
+
+    @Autowired
+    CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
     public List<ProductDTO> findAll(){
@@ -47,14 +52,7 @@ public class ProductService {
     @Transactional
     public ProductDTO insert(ProductDTO productDto){
         Product entity = new Product();
-
-        entity.setName(productDto.getName());
-        entity.setDescription(productDto.getDescription());
-        entity.setDate(productDto.getDate());
-        entity.setImgUrl(productDto.getImgUrl());
-        entity.setPrice(productDto.getPrice());
-        entity.setDate(Instant.now());
-
+        addNewProductAndCategories(productDto, entity);
         entity = productRepository.save(entity);
         return new ProductDTO(entity);
     }
@@ -72,14 +70,7 @@ public class ProductService {
 
         try{
             Product entity = productRepository.getOne(id);
-
-            entity.setName(productDto.getName());
-            entity.setDescription(productDto.getDescription());
-            entity.setDate(productDto.getDate());
-            entity.setImgUrl(productDto.getImgUrl());
-            entity.setPrice(productDto.getPrice());
-            entity.setDate(Instant.now());
-
+            addNewProductAndCategories(productDto, entity);
             entity = productRepository.save(entity);
             return new ProductDTO(entity);
 
@@ -87,6 +78,7 @@ public class ProductService {
             throw new ResourceNotFoundException("Id not found " + id);
         }
     }
+
 
     public void delete(Long id) {
         try{
@@ -106,6 +98,21 @@ public class ProductService {
         }
         catch (DataIntegrityViolationException e){
             throw new DatabaseException("Integrity violation");
+        }
+    }
+    private void addNewProductAndCategories(ProductDTO productDto, Product entity) {
+
+        entity.setName(productDto.getName());
+        entity.setDescription(productDto.getDescription());
+        entity.setDate(productDto.getDate());
+        entity.setImgUrl(productDto.getImgUrl());
+        entity.setPrice(productDto.getPrice());
+        entity.setDate(productDto.getDate());
+
+        entity.getCategories().clear();
+        for(CategoryDTO catDto : productDto.getCategories()){
+            Category category = categoryRepository.getOne(catDto.getId());
+            entity.getCategories().add(category);
         }
     }
 }
