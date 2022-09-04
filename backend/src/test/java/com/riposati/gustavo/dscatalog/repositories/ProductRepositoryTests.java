@@ -1,6 +1,6 @@
-package com.riposati.gustavo.dscatalog.entities;
+package com.riposati.gustavo.dscatalog.repositories;
 
-import com.riposati.gustavo.dscatalog.repositories.ProductRepository;
+import com.riposati.gustavo.dscatalog.entities.Product;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
